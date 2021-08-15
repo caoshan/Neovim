@@ -1,8 +1,5 @@
 call plug#begin('~/.config/nvim/autoload/plugged')
 
-	Plug 'neovim/nvim-lspconfig'
-	Plug 'nvim-lua/completion-nvim'
-	Plug 'nvim-lua/diagnostic-nvim'
 	Plug 'prabirshrestha/vim-lsp'
 	Plug 'nvim-lua/completion-nvim'
 	Plug 'Shougo/deoplete.nvim'
