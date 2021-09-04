@@ -11,7 +11,6 @@ call plug#begin('~/.config/nvim/autoload/plugged')
 
 	Plug 'neovim/nvim-lspconfig'
 	Plug 'nvim-lua/completion-nvim'
-    Plug 'nvim-lua/diagnostic-nvim'
 
 	Plug 'majutsushi/tagbar' " Tag bar 可以用来展示当前的文件的一些函数
     Plug '9mm/vim-closer' " Bracket closure
