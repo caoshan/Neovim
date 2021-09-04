@@ -259,6 +259,11 @@ nmap <leader>gc :Commits<CR>
       autocmd BufLeave,FocusLost,InsertEnter   * set norelativenumber
     augroup END
 
+sign define LspDiagnosticsSignError text=🔴
+sign define LspDiagnosticsSignWarning text=⚪️
+sign define LspDiagnosticsSignInformation text=🔵
+sign define LspDiagnosticsSignHint text=⚪️
+
 " Include file
     let $V=stdpath('config')
     so $V/macos.vim
