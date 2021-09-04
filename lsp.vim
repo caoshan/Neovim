@@ -1,6 +1,10 @@
-let g:LanguageClient_serverCommands = {
-  \ 'cpp': ['clangd'],
-  \ }
+let g:diagnostic_virtual_text_prefix = ''
+let g:diagnostic_enable_virtual_text = 1
+
+let g:completion_matching_strategy_list = ['exact', 'substring', 'fuzzy']
+let g:completion_enable_snippet = 'UltiSnips'
+let g:completion_matching_smart_case = 1
+let g:completion_trigger_on_delete = 1
 
 lua << EOF
   local nvim_lsp = require('lspconfig')
@@ -17,7 +21,7 @@ lua << EOF
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>xd', '<cmd>lua vim.lsp.util.show_line_diagnostics()<CR>', opts)
   end
-  local servers = { 'ccls', 'vimls', 'clangd', 'tsserver', 'cssls', 'html', 'jdtls', 'sumneko_lua'}
+  local servers = { 'ccls', 'clangd', 'tsserver', 'cssls', 'html', 'jdtls', 'sumneko_lua'}
   for _, lsp in ipairs(servers) do
     nvim_lsp[lsp].setup {
       on_attach = on_attach,
@@ -26,22 +30,50 @@ lua << EOF
 EOF
 
 
-lua << EOF
-vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
-  vim.lsp.diagnostic.on_publish_diagnostics, {
-    -- This will disable virtual text, like doing:
-    -- let g:diagnostic_enable_virtual_text = 0
-    virtual_text = false,
 
-    -- This is similar to:
-    -- let g:diagnostic_show_sign = 1
-    -- To configure sign display,
-    --  see: ":help vim.lsp.diagnostic.set_signs()"
-    signs = true,
+if !exists('g:loaded_completion') | finish | endif
 
-    -- This is similar to:
-    -- "let g:diagnostic_insert_delay = 1"
-    update_in_insert = false,
-  }
-)
+set completeopt=menuone,noinsert,noselect
+
+" Use <Tab> and <S-Tab> to navigate through popup menu
+inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+
+let g:completion_confirm_key = ""
+let g:completion_chain_complete_list = {
+        \ 'default' : {
+        \   'default': [
+        \       {'complete_items': ['lsp', 'snippet', 'path']},
+        \       {'mode': '<c-p>'},
+        \       {'mode': '<c-n>'}],
+        \   'comment': []
+        \   }
+        \}
+
+lua <<EOF
+    local remap = vim.api.nvim_set_keymap
+    local status, npairs = pcall(require, "nvim-autopairs")
+    if (not status) then return end
+
+    -- skip it, if you use another global object
+    _G.MUtils= {}
+
+    vim.g.completion_confirm_key = ""
+
+    MUtils.completion_confirm=function()
+      if vim.fn.pumvisible() ~= 0  then
+        if vim.fn.complete_info()["selected"] ~= -1 then
+          require'completion'.confirmCompletion()
+          return npairs.esc("<c-y>")
+        else
+          vim.api.nvim_select_popupmenu_item(0 , false , false ,{})
+          require'completion'.confirmCompletion()
+          return npairs.esc("<c-n><c-y>")
+        end
+      else
+        return npairs.autopairs_cr()
+      end
+    end
+
+    remap('i' , '<CR>','v:lua.MUtils.completion_confirm()', {expr = true , noremap = true})
 EOF
