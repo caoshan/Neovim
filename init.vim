@@ -11,6 +11,8 @@ call plug#begin('~/.config/nvim/autoload/plugged')
 
 	Plug 'neovim/nvim-lspconfig'
 	Plug 'nvim-lua/completion-nvim'
+    Plug 'nvim-lua/diagnostic-nvim'
+    Plug 'hrsh7th/nvim-compe'
 
 	Plug 'majutsushi/tagbar' " Tag bar 可以用来展示当前的文件的一些函数
     Plug '9mm/vim-closer' " Bracket closure
@@ -242,13 +244,13 @@ nmap <leader>gc :Commits<CR>
 	set updatetime=300
 	set shortmess+=c
 	set signcolumn=yes
-	 
+    set completeopt-=preview
+
 	" hi Normal ctermfg=252 ctermbg=none "背景透明
 	" au FileType gitcommit,gitrebase let g:gutentags_enabled=0
 	if has("autocmd")
 	    au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
 	endif
-	inoremap jj <Esc> "将jj映射到Esc
 
     " Automatic toggling between line number modes
     set number relativenumber
@@ -259,6 +261,8 @@ nmap <leader>gc :Commits<CR>
       autocmd BufLeave,FocusLost,InsertEnter   * set norelativenumber
     augroup END
 
+
+
 sign define LspDiagnosticsSignError text=🔴
 sign define LspDiagnosticsSignWarning text=⚪️
 sign define LspDiagnosticsSignInformation text=🔵
@@ -268,6 +272,5 @@ sign define LspDiagnosticsSignHint text=⚪️
     let $V=stdpath('config')
     so $V/macos.vim
     so $V/maps.vim
-    "so $V/lsp.vim
+    so $V/lsp.vim
     so $V/markdown.vim
-

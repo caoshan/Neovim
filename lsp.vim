@@ -13,7 +13,7 @@ lua << EOF
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>xd', '<cmd>lua vim.lsp.util.show_line_diagnostics()<CR>', opts)
   end
-  local servers = { 'ccls', 'clangd', 'tsserver', 'cssls', 'html', 'jdtls', 'sumneko_lua'}
+  local servers = { 'ccls', 'clangd'}
   for _, lsp in ipairs(servers) do
     nvim_lsp[lsp].setup {
       on_attach = on_attach,
@@ -21,25 +21,19 @@ lua << EOF
   end
 EOF
 
-lua <<EOF
-    local remap = vim.api.nvim_set_keymap
-    local status, npairs = pcall(require, "nvim-autopairs")
-    if (not status) then return end
-
-    -- skip it, if you use another global object
-    _G.MUtils= {}
-
-EOF
 
 let g:completion_sorting = "length"  
 let g:completion_enable_auto_popup = 1   "Enable/Disable auto popup
 imap <tab> <Plug>(completion_smart_tab)  
 imap <s-tab> <Plug>(completion_smart_s_tab) 
 let g:completion_matching_strategy_list = ['exact', 'substring', 'fuzzy', 'all']
-let g:completion_trigger_character = ['.', '::']
+
+" Set completeopt to have a better completion experience
+set completeopt=menuone,noinsert,noselect
 
 "You can specify keyword length for triggering completion, if the current word is less then keyword length, completion won't be triggered.
 let g:completion_trigger_keyword_length = 3 " default = 1
 
 " Enable trigger when deletion
-let g:completion_trigger_on_delete = 1
+let g:completion_trigger_on_delete = 0
+
