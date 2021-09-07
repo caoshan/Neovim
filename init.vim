@@ -268,6 +268,6 @@ sign define LspDiagnosticsSignHint text=⚪️
     let $V=stdpath('config')
     so $V/macos.vim
     so $V/maps.vim
-    so $V/lsp.vim
+    "so $V/lsp.vim
     so $V/markdown.vim
 
