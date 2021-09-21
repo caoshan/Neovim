@@ -1,276 +1,149 @@
-call plug#begin('~/.config/nvim/autoload/plugged')
+call plug#begin('~/.vim/plugged')
 
-	Plug 'morhetz/gruvbox'
-	Plug 'preservim/nerdtree'
-	Plug 'scrooloose/nerdtree'          " File tree manager
-	Plug 'jistr/vim-nerdtree-tabs'      " enhance nerdtree's tabs
-	Plug 'tiagofumo/vim-nerdtree-syntax-highlight' " enhance devicons
-	Plug 'Yggdroot/indentLine'			
-	Plug 'vim-airline/vim-airline'       
-	Plug 'vim-airline/vim-airline-themes' "airline 的主题
+Plug 'neovim/nvim-lspconfig'
+Plug 'ray-x/guihua.lua', {'do': 'cd lua/fzy && make' }
+Plug 'ray-x/navigator.lua'
+Plug 'ray-x/guihua.lua', {'do': 'cd lua/fzy && make' }
+Plug 'ray-x/lsp_signature.nvim'
+Plug 'hrsh7th/nvim-compe'
 
-	Plug 'neovim/nvim-lspconfig'
-	Plug 'nvim-lua/completion-nvim'
-    Plug 'nvim-lua/diagnostic-nvim'
-    Plug 'hrsh7th/nvim-compe'
 
-	Plug 'majutsushi/tagbar' " Tag bar 可以用来展示当前的文件的一些函数
-    Plug '9mm/vim-closer' " Bracket closure
-       
-    Plug 'nvim-treesitter/nvim-treesitter' " New color tune
-    Plug 'honza/vim-snippets'
-    Plug 'tpope/vim-commentary'
-    Plug 'mizlan/termbufm'
-    Plug 'SirVer/ultisnips'
-    
-    " Git Related 
-    Plug 'mhinz/vim-signify', { 'branch': 'legacy' }
-    Plug 'tpope/vim-fugitive'
-    Plug 'tpope/vim-rhubarb'
-    Plug 'junegunn/gv.vim'
-
-    " Vim Markdown Preview
-    Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
-    Plug 'SirVer/ultisnips',{'for':'markdown'}
-    Plug 'plasticboy/vim-markdown'
-    Plug 'honza/vim-snippets'
-    Plug 'ferrine/md-img-paste.vim' "从粘贴板 paste
-
-    " Bitbake suppport
-    Plug 'kergoth/vim-bitbake'
-
-    "Vim rip Grep tool, for fast grep inside a file.
-    Plug 'jremmen/vim-ripgrep'
-
-    "Fuzz finder, search tool
-    Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-
-    "Support fuzzy file searching 
-    Plug 'junegunn/fzf.vim'
+" optional, if you need treesitter symbol support
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
 call plug#end()
 
-" Ctrl+F will search files by name 
-    nnoremap <silent> <C-f> :Files<CR>
-    nnoremap <silent> <C-l> :Lines<CR>
-    let g:fzf_action = {
-      \ 'ctrl-t': 'tab split',
-      \ 'ctrl-x': 'split',
-      \ 'ctrl-v': 'vsplit' }
 
-    " Default fzf layout
-    " - down / up / left / right
-    let g:fzf_layout = { 'up': '95%' }
+lua <<EOF
 
-    " Customize fzf colors to match your color scheme
-    " - fzf#wrap translates this to a set of `--color` options
-    let g:fzf_colors =
-    \ { 'fg':      ['fg', 'Normal'],
-      \ 'bg':      ['bg', 'Normal'],
-      \ 'hl':      ['fg', 'Comment'],
-      \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
-      \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
-      \ 'hl+':     ['fg', 'Statement'],
-      \ 'info':    ['fg', 'PreProc'],
-      \ 'border':  ['fg', 'Ignore'],
-      \ 'prompt':  ['fg', 'Conditional'],
-      \ 'pointer': ['fg', 'Exception'],
-      \ 'marker':  ['fg', 'Keyword'],
-      \ 'spinner': ['fg', 'Label'],
-      \ 'header':  ['fg', 'Comment'] }
+require'navigator'.setup({
 
-    let g:fzf_history_dir = '~/.local/share/fzf-history'
+debug = false, -- log output, set to true and log path: ~/.local/share/nvim/gh.log
+  code_action_icon = " ",
+  width = 0.75, -- max width ratio (number of cols for the floating window) / (window width)
+  height = 0.3, -- max list window height, 0.3 by default
+  preview_height = 0.35, -- max height of preview windows
+  border = {"╭", "─", "╮", "│", "╯", "─", "╰", "│"}, -- border style, can be one of 'none', 'single', 'double',
+                                                     -- 'shadow', or a list of chars which defines the border
+  on_attach = function(client, bufnr)
+    -- your hook
+  end,
+  -- put a on_attach of your own here, e.g
+  -- function(client, bufnr)
+  --   -- the on_attach will be called at end of navigator on_attach
+  -- end,
+  -- The attach code will apply to all LSP clients
 
-    function! RipgrepFzf(query, fullscreen)
-      let command_fmt = 'rg  -g !build* --fixed-strings --column --line-number --no-heading --color=always  --smart-case -- %s || true '
-      let initial_command = printf(command_fmt, shellescape(a:query))
-      let reload_command = printf(command_fmt, '{q}')
-      let cwpath = getcwd() . '/'
-       "check man fzf for the spec option
-      let spec = { 'dir': cwpath,'options': ['--reverse','--phony', '--query', a:query,
-                   \ '--preview-window', 'right:45%','--keep-right',
-                   \'--no-info','--filepath-word',
-                   \ '--bind', 'change:reload:'.reload_command]}
+  default_mapping = true,  -- set to false if you will remap every key
+  keymaps = {{key = "gK", func = "declaration()"}}, -- a list of key maps
+  -- this kepmap gK will override "gD" mapping function declaration()  in default kepmap
+  -- please check mapping.lua for all keymaps
+  treesitter_analysis = true, -- treesitter variable context
+  transparency = 50, -- 0 ~ 100 blur the main window, 100: fully transparent, 0: opaque,  set to nil or 100 to disable it
+  code_action_prompt = {enable = true, sign = true, sign_priority = 40, virtual_text = true},
+  icons = {
+    -- Code action
+    code_action_icon = " ",
+    -- Diagnostics
+    diagnostic_head = '🐛',
+    diagnostic_head_severity_1 = "🈲",
+    -- refer to lua/navigator.lua for more icons setups
+  },
+  lspinstall = false, -- set to true if you would like use the lsp installed by lspinstall
 
-      call fzf#vim#grep(initial_command, 1, fzf#vim#with_preview(spec), a:fullscreen)
-    endfunction
-    command! -nargs=* -bang RG call RipgrepFzf(<q-args>, <bang>0)
-
-
-" RipGrep
-    let g:rg_derive_root='true'
-
-    " Ctrl+f+f will search files by content
-    nnoremap <silent> <c-f><c-f> :RG<CR>
-
-" Tag Bar
-	let g:tagbar_width=30
-	nnoremap <silent> <F4> :TagbarToggle<CR> " 将tagbar的开关按键设置为 F4
-
-" Nerd Tree
-    " ---> toggling nerd-tree using Ctrl-N <---
-    map <C-n> :NERDTreeToggle<CR>
-
-    let g:NERDTreeAutoDeleteBuffer=1
-    let g:NERDTreeQuitOnOpen=0
-
-    " Open nerd tree at the current file or close nerd tree if pressed again.
-    nnoremap <silent> <expr> <Leader>n g:NERDTree.IsOpen() ? "\:NERDTreeClose<CR>" : bufexists(expand('%')) ? "\:NERDTreeFind<CR>" : "\:NERDTree<CR>"
-
-    " custom with icon 
-    let g:NERDTreeGitStatusIndicatorMapCustom = {
-                    \ 'Modified'  :'✹',
-                    \ 'Staged'    :'✚',
-                    \ 'Untracked' :'✭',
-                    \ 'Renamed'   :'➜',
-                    \ 'Unmerged'  :'═',
-                    \ 'Deleted'   :'✖',
-                    \ 'Dirty'     :'✗',
-                    \ 'Ignored'   :'☒',
-                    \ 'Clean'     :'✔︎',
-                    \ 'Unknown'   :'?',
-                    \ }
-
-    " Use Space as the slection keyboard key
-    let NERDTreeMapActivateNode='<space>'
-
-" vim-signify
-    let g:signify_difftool = 'gnudiff' 
-    set updatetime=100  " default updatetime 4000ms is not good for async update
-
-" Gruvbox
-	colorscheme gruvbox
-	set background=dark    " Setting dark mode
-
-" Access and source vimrc
-	"Easy access to vimrc
-	nnoremap <leader>ev :vs $MYVIMRC<cr>
-	"Reload vimrc
-	nnoremap <leader>sv :source $MYVIMRC<cr>
-
-" IndentLine access
- 	let g:indent_guides_guide_size = 1  " 指定对齐线的尺寸
-	let g:indent_guides_start_level = 1  " 从第二层开始可视化显示缩进
-
-" Vim Airline
-	" 设置状态栏
-	let g:airline#extensions#tabline#enabled = 1
-	let g:airline#extensions#tabline#left_alt_sep = '|'
-	let g:airline#extensions#tabline#buffer_nr_show = 0
-	let g:airline#extensions#tabline#formatter = 'default'
-	let g:airline#extensions#keymap#enabled = 1
-	let g:airline#extensions#tabline#buffer_idx_mode = 1
-	let g:airline#extensions#tabline#buffer_idx_format = {
-	       \ '0': '0 ',
-	       \ '1': '1 ',
-	       \ '2': '2 ',
-	       \ '3': '3 ',
-	       \ '4': '4 ',
-	       \ '5': '5 ',
-	       \ '6': '6 ',
-	       \ '7': '7 ',
-	       \ '8': '8 ',
-	       \ '9': '9 '
-	       \}
-	" 设置切换tab的快捷键 <\> + <i> 切换到第i个 tab
-	nmap <leader>1 <Plug>AirlineSelectTab1
-	nmap <leader>2 <Plug>AirlineSelectTab2
-	nmap <leader>3 <Plug>AirlineSelectTab3
-	nmap <leader>4 <Plug>AirlineSelectTab4
-	nmap <leader>5 <Plug>AirlineSelectTab5
-	nmap <leader>6 <Plug>AirlineSelectTab6
-	nmap <leader>7 <Plug>AirlineSelectTab7
-	nmap <leader>8 <Plug>AirlineSelectTab8
-	nmap <leader>9 <Plug>AirlineSelectTab9
-	" 设置切换tab的快捷键 <\> + <-> 切换到前一个 tab
-	nmap <leader>- <Plug>AirlineSelectPrevTab
-	" 设置切换tab的快捷键 <\> + <+> 切换到后一个 tab
-	nmap <leader>+ <Plug>AirlineSelectNextTab
-	" 设置切换tab的快捷键 <\> + <q> 退出当前的 tab
-	nmap <leader>q :bp<cr>:bd #<cr>
-	" 修改了一些个人不喜欢的字符
-	if !exists('g:airline_symbols')
-	    let g:airline_symbols = {}
-	endif
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"Git version control fugitive
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-nmap <leader>df :Gdiffsplit! <CR>
-nmap <leader>gs :G<CR>
-nmap <leader>gc :Commits<CR>
-
-" NeoVim basic configuration
-	filetype plugin on
-	" 设置为双字宽显示，否则无法完整显示如:☆
-	set t_ut= " 防止vim背景颜色错误
-	set showmatch " 高亮匹配括号
-	set matchtime=1
-	set report=0
-	set ignorecase
-	set nocompatible
-	set noeb
-	set softtabstop=4
-	set shiftwidth=4
-	set nobackup
-	set autoread
-	set nocompatible
-	set nu "设置显示行号
-	set backspace=2 "能使用backspace回删
-	syntax on "语法检测
-	set ruler "显示最后一行的状态
-	set laststatus=2 "两行状态行+一行命令行
-	set ts=4
-	set expandtab
-	set autoindent "设置c语言自动对齐
-	set t_Co=256 "指定配色方案为256
-	set selection=exclusive
-	" set selectmode=mouse,key
-	set tabstop=4 "设置TAB宽度
-	set history=1000 "设置历史记录条数   
-	" colorscheme desert
-	"共享剪切板
-	set clipboard+=unnamed 
-	set cmdheight=3
-	if version >= 603
-	     set helplang=cn
-	     set encoding=utf-8
-	endif
-	set fencs=utf-8,ucs-bom,shift-jis,gb18030,gbk,gb2312,cp936
-	set termencoding=utf-8
-	set encoding=utf-8
-	set fileencodings=ucs-bom,utf-8,cp936
-	set fileencoding=utf-8
-	set updatetime=300
-	set shortmess+=c
-	set signcolumn=yes
-    set completeopt-=preview
-
-	" hi Normal ctermfg=252 ctermbg=none "背景透明
-	" au FileType gitcommit,gitrebase let g:gutentags_enabled=0
-	if has("autocmd")
-	    au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
-	endif
-
-    " Automatic toggling between line number modes
-    set number relativenumber
-
-    augroup numbertoggle
-     autocmd!
-      autocmd BufEnter,FocusGained,InsertLeave * set relativenumber
-      autocmd BufLeave,FocusLost,InsertEnter   * set norelativenumber
-    augroup END
+  lsp = {
+    format_on_save = true, -- set to false to disasble lsp code format on save (if you are using prettier/efm/formater etc)
+    disable_format_ft = {"sqls", "sumneko_lua", "gopls"},  -- a list of lsp not enable auto-format (e.g. if you using efm or vim-codeformat etc), empty by default
+    disable_lsp = {'pylsd', 'sqlls'}, -- a list of lsp server disabled for your project, e.g. denols and tsserver you may
+    -- only want to enable one lsp server
+    -- to disable all default config and use your own lsp setup set
+    -- disable_lsp = 'all'
+    diagnostic_scroll_bar_sign = {'▃', '█'}, -- experimental:  diagnostic status in scroll bar area; set to nil to disable the diagnostic sign,
+    -- for other style, set to {'╍', 'ﮆ'} or {'-', '='}
+    diagnostic_virtual_text = true,  -- show virtual for diagnostic message
+    diagnostic_update_in_insert = false, -- update diagnostic message in insert mode
+    disply_diagnostic_qf = true, -- always show quickfix if there are diagnostic errors, set to false if you  want to ignore it
+    tsserver = {
+      filetypes = {'typescript'} -- disable javascript etc,
+      -- set to {} to disable the lspclient for all filetypes
+    },
+    gopls = {   -- gopls setting
+      on_attach = function(client, bufnr)  -- on_attach for gopls
+        -- your special on attach here
+        -- e.g. disable gopls format because a known issue https://github.com/golang/go/issues/45732
+        print("i am a hook, I will disable document format")
+        client.resolved_capabilities.document_formatting = false
+      end,
+      settings = {
+        gopls = {gofumpt = false} -- disable gofumpt etc,
+      }
+    },
+    sumneko_lua = {
+      sumneko_root_path = vim.fn.expand("$HOME") .. "/github/sumneko/lua-language-server",
+      sumneko_binary = vim.fn.expand("$HOME") .. "/github/sumneko/lua-language-server/bin/macOS/lua-language-server",
+    },
+  }
 
 
 
-sign define LspDiagnosticsSignError text=🔴
-sign define LspDiagnosticsSignWarning text=⚪️
-sign define LspDiagnosticsSignInformation text=🔵
-sign define LspDiagnosticsSignHint text=⚪️
+})
 
-" Include file
-    let $V=stdpath('config')
-    so $V/macos.vim
-    so $V/maps.vim
-    so $V/lsp.vim
-    so $V/markdown.vim
+local servers = {
+  "angularls", "gopls", "tsserver", "flow", "bashls", "dockerls", "julials", "pylsp", "pyright",
+  "jedi_language_server", "jdtls", "sumneko_lua", "vimls", "html", "jsonls", "solargraph", "cssls",
+  "yamlls", "clangd", "ccls", "sqls", "denols", "graphql", "dartls", "dotls",
+  "kotlin_language_server", "nimls", "intelephense", "vuels", "phpactor", "omnisharp",
+  "r_language_server", "rust_analyzer", "terraformls"
+}
+
+
+ cfg = {
+  bind = true, -- This is mandatory, otherwise border config won't get registered.
+               -- If you want to hook lspsaga or other signature handler, pls set to false
+  doc_lines = 2, -- will show two lines of comment/doc(if there are more than two lines in doc, will be truncated);
+                 -- set to 0 if you DO NOT want any API comments be shown
+                 -- This setting only take effect in insert mode, it does not affect signature help in normal
+                 -- mode, 10 by default
+
+  floating_window = true, -- show hint in a floating window, set to false for virtual text only mode
+
+  floating_window_above_cur_line = true, -- try to place the floating above the current line when possible Note:
+  -- will set to true when fully tested, set to false will use whichever side has more space
+  -- this setting will be helpful if you do not want the PUM and floating win overlap
+  fix_pos = false,  -- set to true, the floating window will not auto-close until finish all parameters
+  hint_enable = true, -- virtual hint enable
+  hint_prefix = "🐼 ",  -- Panda for parameter
+  hint_scheme = "String",
+  use_lspsaga = false,  -- set to true if you want to use lspsaga popup
+  hi_parameter = "Search", -- how your parameter will be highlight
+  max_height = 12, -- max height of signature floating_window, if content is more than max_height, you can scroll down
+                   -- to view the hiding contents
+  max_width = 120, -- max_width of signature floating_window, line will be wrapped if exceed max_width
+  transpancy = 10, -- set this value if you want the floating windows to be transpant (100 fully transpant), nil to disable(default)
+  handler_opts = {
+    border = "shadow"   -- double, single, shadow, none
+  },
+
+  trigger_on_newline = false, -- set to true if you need multiple line parameter, sometime show signature on new line can be confusing, set it to false for #58
+  extra_trigger_chars = {}, -- Array of extra characters that will trigger signature completion, e.g., {"(", ","}
+  -- deprecate !!
+  -- decorator = {"`", "`"}  -- this is no longer needed as nvim give me a handler and it allow me to highlight active parameter in floating_window
+  zindex = 200, -- by default it will be on top of all floating windows, set to 50 send it to bottom
+  debug = false, -- set to true to enable debug logging
+  log_path = "debug_log_file_path", -- debug log path
+
+  padding = '', -- character to pad on left and right of signature can be ' ', or '|'  etc
+
+  shadow_blend = 36, -- if you using shadow as border use this set the opacity
+  shadow_guibg = 'Black', -- if you using shadow as border use this set the color e.g. 'Green' or '#121315'
+  timer_interval = 200, -- default timer check interval set to lower value if you want to reduce latency
+  toggle_key = nil -- toggle signature on and off in insert mode,  e.g. toggle_key = '<M-x>'
+}
+
+require'lsp_signature'.on_attach(cfg, bufnr) -- no need to specify bufnr if you don't use toggle_key
+
+
+EOF
+
+
+
